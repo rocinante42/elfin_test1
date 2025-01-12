@@ -39,6 +39,7 @@
   "dependencies": {
     "@tailwindcss/typography": "^0.5.15",
     "@tanstack/svelte-query": "^5.62.16",
-    "lucide-svelte": "^0.471.0"
+    "lucide-svelte": "^0.471.0",
+    "openmeteo": "^1.1.4"
   }
 }

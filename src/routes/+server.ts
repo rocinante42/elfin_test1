@@ -1,0 +1,2 @@
+import { fetchWeatherApi } from 'openmeteo';
+

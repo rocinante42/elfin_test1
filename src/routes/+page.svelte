@@ -1,5 +1,8 @@
+<!-- // TODO: Scroll on location visible background FIX!!!!!!! -->
 <script lang="ts">
 	import { numberToWords } from '$lib/utils';
+	import { browser } from '$app/environment';
+	import my_cities from '$lib/stores/my_cities';
 	import {
 		ThermometerSun,
 		CloudSun,
@@ -9,23 +12,49 @@
 		Earth
 	} from 'lucide-svelte';
 	import Locations from '$lib/components/Locations.svelte';
+	import type { City } from '$lib/types';
+	import type { PageData } from './$types';
+	import { onMount } from 'svelte';
+    import { createQuery } from '@tanstack/svelte-query';
+	import Ticker from '$lib/components/Ticker.svelte';
+    const today = new Date().toISOString().split('T')[0];
+
+    const citiesQuery = createQuery({
+        queryKey: ['cities'],
+        queryFn: () => GetCitiesWeather(),
+    })
+
+	let { data }: { data: PageData } = $props();
 	let today_temp = numberToWords(23);
-
 	let show_locations_window = $state(false);
+	let cached_cities = $my_cities;
 
-	interface ShortLocation {
-		name: string;
-		temp: string;
-	}
+	const GetCitiesWeather = async () => {
+		const cities_names = cached_cities.map((city) => city.name);
+		const params = new URLSearchParams({
+			cities: cities_names.join(','),
+			date: today
+		});
+		try {
+			const res = await fetch(`/api/cities?${params}`);
+			const data = await res.json();
+			console.log(data, 'data from cities');
+            return data;
+		} catch (error) {
+			console.error(error);
+            return [];
+		}
+	};
 
-	let short_locations: ShortLocation[] = [
-		{ name: 'San Salvador', temp: '23°' },
-		{ name: 'Stockholm', temp: '12°' },
-		{ name: 'New York', temp: '15°' },
-		{ name: 'Tokyo', temp: '22°' },
-		{ name: 'Sydney', temp: '30°' },
-		{ name: 'Cape Town', temp: '18°' }
-	];
+	onMount(async () => {
+		if (browser) {
+			if (cached_cities.length == 0) {
+                show_locations_window = true;
+            }
+		}
+	});
+
+	// console.log($citiesQuery, 'citiesQuery');
 
 	function openLocationsWindow() {
 		show_locations_window = true;
@@ -63,8 +92,10 @@
 				<span class="flex h-[1px] flex-grow bg-black"></span>
 				April 20
 			</div>
+			<!-- END OF DATE -->
 		</div>
 	</div>
+	<!-- WIDGETS -->
 	<div class="flex w-full flex-row border-t border-solid border-black py-6 pl-6">
 		<div class="right-now flex w-full text-[20px]">Right Now</div>
 		<div class="flex w-full flex-col">
@@ -100,37 +131,14 @@
 		</div>
 	</div>
 </div>
-<footer class="sticky bottom-0 max-h-24 bg-elfin_yellow">
-	<div class="flex flex-row justify-between border-b border-t border-solid border-black">
-		<div class="flex flex-grow-2 overflow-hidden">
-			<div
-				class="flex max-h-16 items-center "
-			>
-				<p class="ticker w-full h-[20px] ">
-					{#each short_locations as location}
-						<span class="marquee mr-4">{location.name} {location.temp}</span>
-					{/each}
-				</p>
-			</div>
-		</div>
-		<button
-			type="button"
-			aria-label="Locations"
-			onclick={() => {
-				// show locations window
-				show_locations_window = true;
-			}}
-			class="flex  flex-grow-1 max-w-28 cursor-pointer items-center border-l border-solid border-black p-4"
-			><Earth size="25" strokeWidth="1" /></button
-		>
-	</div>
-</footer>
+<!-- END OF WIDGETS -->
+<Ticker cities={cached_cities} onOpenWindow={openLocationsWindow} />
 {#if show_locations_window}
 	<Locations
 		onback={() => {
 			show_locations_window = false;
 		}}
-		locations={[]}
+		locations={cached_cities}
 	/>
 {/if}
 
@@ -143,18 +151,4 @@
 		);
 	}
 
-	.ticker {
-		animation: marquee 12s linear infinite;
-		white-space: nowrap;
-        overflow: hidden;
-	}
-
-	@keyframes marquee {
-		0% {
-			transform: translate(100%, 0);
-		}
-		100% {
-			transform: translate(-100%, 0);
-		}
-	}
 </style>

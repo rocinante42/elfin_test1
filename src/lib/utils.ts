@@ -1,3 +1,5 @@
+import type { City } from "./types";
+
 export function numberToWords(num: number): string {
     if (num < -100 || num > 100) {
       throw new Error("Number out of range. Only supports -100 to 100.");
@@ -34,4 +36,10 @@ export function numberToWords(num: number): string {
     }
   
     return words.trim();
+  }
+
+  export function distributeCitiesInTwo(cities: City[]): [City[], City[]] {
+    const citiesCopy = [...cities];
+    const firstHalf = citiesCopy.splice(0, Math.ceil(citiesCopy.length / 2));
+    return [firstHalf, citiesCopy];
   }
