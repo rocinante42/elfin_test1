@@ -1,4 +1,5 @@
 <script>
+	import { weatherKeys } from '$lib/api/weather';
     	import {
 		ThermometerSun,
 		CloudSun,
@@ -14,16 +15,9 @@
     export let snow = 0;
     export let cloud_cover = 0;
     export let showers = 0;
+    export let appendix = '';
 
-    let weatherKeys = [
-        'Clear sky',
-        'Partly cloudy',
-        'Mostly cloudy',
-        'Cloudy',
-        'Stormy',
-        'Rainy',
-        'Snowy',
-    ]
+   
 
     const weatherIcons = {
         [weatherKeys[0]]: Sun,
@@ -52,4 +46,4 @@
 
 </script>
 
-<svelte:component this={weatherIcons[weather]} size="16" strokeWidth={1}></svelte:component> {weather}
+<svelte:component this={weatherIcons[weather]} size="16" strokeWidth={1}></svelte:component> {weather} {appendix}

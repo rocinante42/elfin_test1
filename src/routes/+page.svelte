@@ -139,20 +139,46 @@
 				<div
 					class="flex w-full flex-row items-center gap-2 align-middle text-[18px] font-extralight"
 				>
-					<CloudFog size="16" strokeWidth="1" />
-					<span class="flex">Foggy morning</span>
+					<Legend
+						rain={$todays_weather.morning.rain}
+						snow={$todays_weather.morning.snowfall}
+						cloud_cover={$todays_weather.morning.cloudcover}
+						showers={$todays_weather.morning.showers}
+						appendix="morning"
+					/>
 				</div>
-				<div class="flex w-full flex-row items-center gap-2 text-[18px] font-extralight">
-					<CloudSun size="16" strokeWidth="1" />
-					<span class="">Cloudy noon</span>
+                <div
+					class="flex w-full flex-row items-center gap-2 align-middle text-[18px] font-extralight"
+				>
+					<Legend
+						rain={$todays_weather.noon.rain}
+						snow={$todays_weather.noon.snowfall}
+						cloud_cover={$todays_weather.noon.cloudcover}
+						showers={$todays_weather.noon.showers}
+						appendix="noon"
+					/>
 				</div>
-				<div class="flex w-full flex-row items-center gap-2 text-[18px] font-extralight">
-					<CloudRain size="16" strokeWidth="1" />
-					<span class="">Rainy afternoon</span>
+                <div
+					class="flex w-full flex-row items-center gap-2 align-middle text-[18px] font-extralight"
+				>
+					<Legend
+						rain={$todays_weather.afternoon.rain}
+						snow={$todays_weather.afternoon.snowfall}
+						cloud_cover={$todays_weather.afternoon.cloudcover}
+						showers={$todays_weather.afternoon.showers}
+						appendix="afternoon"
+					/>
 				</div>
-				<div class="flex w-full flex-row items-center gap-2 text-[18px] font-extralight">
-					<CloudLightning size="16" strokeWidth="1" />
-					<span class="">Stormy night</span>
+                <div
+					class="flex w-full flex-row items-center gap-2 align-middle text-[18px] font-extralight"
+				>
+					<Legend
+						rain={$todays_weather.night.rain}
+						snow={$todays_weather.night.snowfall}
+						cloud_cover={$todays_weather.night.cloudcover}
+						showers={$todays_weather.night.showers}
+						appendix="night"
+					/>
 				</div>
 			</div>
 		</div>

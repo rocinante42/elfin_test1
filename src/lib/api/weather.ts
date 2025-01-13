@@ -21,6 +21,12 @@ export interface WeatherData {
     },
 }
 
+interface TimeOfDayReport {
+    rain: number;
+    showers: number;
+    snowfall: number;
+    cloudcover: number;
+}
 export interface TodaysWeather {
 	current_temp: number;
     feels_like: number;
@@ -32,12 +38,26 @@ export interface TodaysWeather {
     showers: number;
     snowfall: number;
     cloudcover: number;
+    morning: TimeOfDayReport;
+    noon: TimeOfDayReport;
+    afternoon: TimeOfDayReport;
+    night: TimeOfDayReport;
 }
+
+export const weatherKeys = [
+    'Clear sky',
+    'Partly cloudy',
+    'Mostly cloudy',
+    'Cloudy',
+    'Stormy',
+    'Rainy',
+    'Snowy',
+]
 
 export const fetchWeather = async (lat: number, lon: number) => {
 
 	// const weather_api = 'https://api.open-meteo.com/v1/forecast';
-    const weather_api = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,precipitation,rain,showers,snowfall,cloud_cover&hourly=temperature_2m,apparent_temperature,rain,showers,snowfall,cloud_cover&timeformat=unixtime&forecast_days=1`
+    const weather_api = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,precipitation,rain,showers,snowfall,cloud_cover&hourly=temperature_2m,apparent_temperature,rain,showers,snowfall,cloud_cover&forecast_days=1`
 
 	try {
 		const responses = await fetch(weather_api);
