@@ -6,7 +6,8 @@
 	const queryClient = new QueryClient({
 		defaultOptions: {
 			queries: {
-				enabled: browser
+				enabled: browser,
+                gcTime: 1000 * 60 * 60 * 1, // 1 hour
 			}
 		}
 	});

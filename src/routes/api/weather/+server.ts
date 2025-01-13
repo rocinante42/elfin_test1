@@ -1,59 +1,86 @@
-import { fetchWeatherApi } from 'openmeteo';
+
+import { fetchWeather, type TodaysWeather} from '$lib/api/weather';
 import type { RequestHandler } from './$types';
 import { error } from '@sveltejs/kit';
+
+function findClosestDate(input: Date, sample: string[]): string | null {
+    if (sample.length === 0) {
+      return null; // Return null if the sample list is empty
+    }
+  
+    // Convert input date to its timestamp for easier calculations
+    const inputTime = input.getTime();
+  
+    // Use reduce to find the closest date
+    const closestDate = sample.reduce((closest, current) => {
+      const closestTime = new Date(closest).getTime();
+      const currentTime = new Date(current).getTime();
+  
+      return Math.abs(currentTime - inputTime) < Math.abs(closestTime - inputTime)
+        ? current
+        : closest;
+    });
+    console.log("findClosestDate closestDate", new Date(closestDate).toISOString());
+    return closestDate;
+  }
+
 
 // Gets the cities weather information given a pair of coordinates lat-lon
 export const GET: RequestHandler = async ({ url }) => {
 	const lat = url.searchParams.get('lat');
 	const lon = url.searchParams.get('lon');
-	if (!lat || !lon) {
+    const city_name = url.searchParams.get('city_name');
+    const country = url.searchParams.get('country');
+
+
+	if (!lat || !lon || !city_name || !country) {
 		return error(400, 'Missing location parameter');
 	}
+    console.log("GET /weather/server.ts lat", lat);
+    console.log("GET /weather/server.ts lon", lon);
 
-	const params = {
-		latitude: parseFloat(lat),
-		longitude: parseFloat(lon)
-	};
+    try {
+        const weatherData = await fetchWeather(Number(lat), Number(lon));
 
-	const weather_api = 'https://api.open-meteo.com/v1/forecast';
-	const responses = await fetchWeatherApi(weather_api, params);
+        const now = new Date();
+        const closestTime = findClosestDate(now, weatherData.hourly.time);
+        if (!closestTime) {
+            throw new Error('No weather data available');
+        }
+        // const index = weatherData.hourly.time.indexOf(closestTime);
+        // console.log("found index is: ", index);
+        // const current_temp = weatherData.hourly.temperature_2m[index];
+        // const feels_like = weatherData.hourly.apparent_temperature[index];
+        // const rain = weatherData.hourly.rain[index];
+        // const showers = weatherData.hourly.showers[index];
+        // const snowfall = weatherData.hourly.snowfall[index];
+        // const cloudcover = weatherData.hourly.cloud_cover[index];
 
-	// Helper function to form time ranges
-	const range = (start: number, stop: number, step: number) =>
-		Array.from({ length: (stop - start) / step }, (_, i) => start + i * step);
+        const current_temp = weatherData.current.temperature_2m;
+        const feels_like = weatherData.current.apparent_temperature;
+        const rain = weatherData.current.precipitation;
+        const showers = weatherData.current.showers;
+        const snowfall = weatherData.current.snowfall;
+        const cloudcover = weatherData.current.cloud_cover;
 
-	// Process first location. Add a for-loop for multiple locations or weather models
-	const response = responses[0];
 
-	// Attributes for timezone and location
-	const utcOffsetSeconds = response.utcOffsetSeconds();
-	// const timezone = response.timezone();
-	// const timezoneAbbreviation = response.timezoneAbbreviation();
-	// const latitude = response.latitude();
-	// const longitude = response.longitude();
+        const result: TodaysWeather = {
+            current_temp,
+            feels_like,
+            lat: Number(lat),
+            lon: Number(lon),
+            city_name,
+            country,
+            rain,
+            showers,
+            snowfall,
+            cloudcover
+        };
 
-	const hourly = response.hourly()!;
 
-	// Note: The order of weather variables in the URL query and the indices below need to match!
-	const weatherData = {
-		hourly: {
-			time: range(Number(hourly.time()), Number(hourly.timeEnd()), hourly.interval()).map(
-				(t) => new Date((t + utcOffsetSeconds) * 1000)
-			),
-			temperature2m: hourly.variables(0)!.valuesArray()!
-		}
-	};
+        return new Response(JSON.stringify(result));
+    } catch (e) {
+        return error(500, (e as Error).message);
+    }
 
-	// `weatherData` now contains a simple structure with arrays for datetime and weather data
-	for (let i = 0; i < weatherData.hourly.time.length; i++) {
-		console.log(weatherData.hourly.time[i].toISOString(), weatherData.hourly.temperature2m[i]);
-	}
-	return new Response(JSON.stringify(weatherData));
-
-	// try {
-	//     const result = await Promise.all(citiesArray.map(coordinates));
-	//     return new Response(JSON.stringify(result));
-	// } catch  {
-	//     return error(500, 'Failed to fetch coordinates');
-	// }
 };

@@ -13,7 +13,7 @@
 			<div class="flex max-h-16 items-center w-full">
 				<p class="ticker flex h-[20px] w-full">
 					{#each cities as location}
-						<span class="marquee mr-4">{location.name} {location.temp}</span>
+						<span class="marquee mr-4">{location.name}</span>
 					{/each}
 				</p>
 			</div>

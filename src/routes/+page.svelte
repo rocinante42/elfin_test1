@@ -1,60 +1,64 @@
 <!-- // TODO: Scroll on location visible background FIX!!!!!!! -->
 <script lang="ts">
-	import { numberToWords } from '$lib/utils';
+	import { getCountryEmoji, normalizeTemperature, numberToWords } from '$lib/utils';
 	import { browser } from '$app/environment';
 	import my_cities from '$lib/stores/my_cities';
-	import {
-		ThermometerSun,
-		CloudSun,
-		CloudFog,
-		CloudRain,
-		CloudLightning,
-		Earth
-	} from 'lucide-svelte';
+	import todays_weather from '$lib/stores/today';
+	import { ThermometerSun, CloudSun, CloudFog, CloudRain, CloudLightning } from 'lucide-svelte';
 	import Locations from '$lib/components/Locations.svelte';
 	import type { City } from '$lib/types';
 	import type { PageData } from './$types';
 	import { onMount } from 'svelte';
-    import { createQuery } from '@tanstack/svelte-query';
 	import Ticker from '$lib/components/Ticker.svelte';
-    const today = new Date().toISOString().split('T')[0];
+	import type { TodaysWeather } from '$lib/api/weather';
+	import Legend from '$lib/components/Legend.svelte';
 
-    const citiesQuery = createQuery({
-        queryKey: ['cities'],
-        queryFn: () => GetCitiesWeather(),
-    })
+	// Ideally you'd poll the date from the api every hour or so but for now we'll just use the client date.
+	let date = new Date();
+	let day = date.getDate();
+	let month = date.getMonth() + 1;
+	let day_name = date.toLocaleDateString('en-US', { weekday: 'long' });
+	let month_name = date.toLocaleDateString('en-US', { month: 'long' });
+
+	const today = new Date().toISOString().split('T')[0];
+
+	console.log(today, 'today');
 
 	let { data }: { data: PageData } = $props();
-	let today_temp = numberToWords(23);
 	let show_locations_window = $state(false);
 	let cached_cities = $my_cities;
 
-	const GetCitiesWeather = async () => {
-		const cities_names = cached_cities.map((city) => city.name);
+	const GetCityWeather = async (): Promise<TodaysWeather | null> => {
+		const city = cached_cities.filter((c) => c.is_main)[0];
 		const params = new URLSearchParams({
-			cities: cities_names.join(','),
-			date: today
+			lat: String(city.lat),
+			lon: String(city.lon),
+			city_name: city.name,
+			country: city.country
 		});
 		try {
-			const res = await fetch(`/api/cities?${params}`);
+			const res = await fetch(`/api/weather?${params}`);
 			const data = await res.json();
-			console.log(data, 'data from cities');
-            return data;
+			console.log(data, 'data from city');
+			return data;
 		} catch (error) {
 			console.error(error);
-            return [];
+			return null;
 		}
 	};
 
 	onMount(async () => {
 		if (browser) {
 			if (cached_cities.length == 0) {
-                show_locations_window = true;
-            }
+				show_locations_window = true;
+			}
+		}
+
+		const todays = await GetCityWeather();
+		if (todays) {
+			todays_weather.set(todays);
 		}
 	});
-
-	// console.log($citiesQuery, 'citiesQuery');
 
 	function openLocationsWindow() {
 		show_locations_window = true;
@@ -62,75 +66,99 @@
 </script>
 
 <div class="container-main flex min-h-full w-full flex-col bg-elfin_yellow font-sans">
-	<div class="flex min-h-full w-full bg-white">
-		<!-- TOP CONTAINER -->
-		<div class="colored-bg h-full min-h-full w-full px-6 pb-12 pt-24">
-			<!-- LOCATION -->
-			<button
-				type="button"
-				onclick={openLocationsWindow}
-				class="location flex cursor-pointer flex-col"
-				aria-label="Open locations window"
-			>
-				<div class="font-semibold">🇸🇪 Örebro, Sweden</div>
-				<div class="font-thin">59.2753° N 15.2134° E</div>
-			</button>
-			<!-- END OF LOCATION -->
+	{#if $todays_weather}
+		<div class="flex min-h-full w-full bg-white">
+			<!-- TOP CONTAINER -->
+			<div class="colored-bg h-full min-h-full w-full px-6 pb-12 pt-24">
+				<!-- LOCATION -->
+				<button
+					type="button"
+					onclick={openLocationsWindow}
+					class="location flex cursor-pointer flex-col"
+					aria-label="Open locations window"
+				>
+					<div class="font-semibold">
+						{getCountryEmoji($todays_weather.country || '')}
+						{$todays_weather.city_name}, {$todays_weather.country}
+					</div>
+					<div class="font-thin">{$todays_weather.lat}° N {$todays_weather.lon}° E</div>
+				</button>
+				<!-- END OF LOCATION -->
 
-			<!-- TEMPERATURE -->
-			<div class="mt-32 text-left font-sans text-[80px] font-[300] leading-[80px] tracking-[-2px]">
-				<div class="flex flex-row">
-					<!-- <div class="flex">-</div> -->
-					<div class="">{today_temp}<span class="font-[100]">°</span></div>
+				<!-- TEMPERATURE -->
+				<div
+					class="mt-32 text-left font-sans text-[80px] font-[300] leading-[80px] tracking-[-2px]"
+				>
+					<div class="flex flex-row">
+						<div class="">
+							{$todays_weather.current_temp &&
+								numberToWords(Math.floor($todays_weather.current_temp))}<span class="font-[100]"
+								>°</span
+							>
+						</div>
+					</div>
+				</div>
+				<!-- END OF TEMPERATURE -->
+
+				<!-- DATE -->
+				<div class="mt-6 flex items-center gap-2 align-middle text-[20px] font-extralight">
+					{day_name}
+					<span class="flex h-[1px] flex-grow bg-black"></span>
+					{month_name}
+					{day}
+				</div>
+				<!-- END OF DATE -->
+			</div>
+		</div>
+		<!-- WIDGETS -->
+		<div class="flex w-full flex-row border-t border-solid border-black py-6 pl-6">
+			<div class="right-now flex w-full text-[20px]">Right Now</div>
+			<div class="flex w-full flex-col">
+				<div class="flex w-full flex-row items-center gap-2 text-[18px] font-extralight">
+					<ThermometerSun size="16" strokeWidth="1" />
+					<span class=""
+						>Feels like {$todays_weather &&
+							normalizeTemperature($todays_weather.feels_like, 0)}</span
+					>
+				</div>
+				<div class="flex w-full flex-row items-center gap-2 text-[18px] font-extralight">
+					<!-- <CloudSun size="16" strokeWidth="1" />
+					<span class="">Partly cloudy</span> -->
+					<Legend
+						rain={$todays_weather.rain}
+						snow={$todays_weather.snowfall}
+						cloud_cover={$todays_weather.cloudcover}
+						showers={$todays_weather.showers}
+					/>
 				</div>
 			</div>
-			<!-- END OF TEMPERATURE -->
-
-			<!-- DATE -->
-			<div class="mt-6 flex items-center gap-2 align-middle text-[20px] font-extralight">
-				Tuesday
-				<span class="flex h-[1px] flex-grow bg-black"></span>
-				April 20
-			</div>
-			<!-- END OF DATE -->
 		</div>
-	</div>
-	<!-- WIDGETS -->
-	<div class="flex w-full flex-row border-t border-solid border-black py-6 pl-6">
-		<div class="right-now flex w-full text-[20px]">Right Now</div>
-		<div class="flex w-full flex-col">
-			<div class="flex w-full flex-row items-center gap-2 text-[18px] font-extralight">
-				<ThermometerSun size="16" strokeWidth="1" />
-				<span class="">Feels like 22°</span>
-			</div>
-			<div class="flex w-full flex-row items-center gap-2 text-[18px] font-extralight">
-				<CloudSun size="16" strokeWidth="1" />
-				<span class="">Partly cloudy</span>
-			</div>
-		</div>
-	</div>
-	<div class="flex w-full flex-row border-t border-solid border-black py-6 pl-6">
-		<div class="right-now flex w-full text-[20px]">Later Today</div>
-		<div class="flex w-full flex-col">
-			<div class="flex w-full flex-row items-center gap-2 align-middle text-[18px] font-extralight">
-				<CloudFog size="16" strokeWidth="1" />
-				<span class="flex">Foggy morning</span>
-			</div>
-			<div class="flex w-full flex-row items-center gap-2 text-[18px] font-extralight">
-				<CloudSun size="16" strokeWidth="1" />
-				<span class="">Cloudy noon</span>
-			</div>
-			<div class="flex w-full flex-row items-center gap-2 text-[18px] font-extralight">
-				<CloudRain size="16" strokeWidth="1" />
-				<span class="">Rainy afternoon</span>
-			</div>
-			<div class="flex w-full flex-row items-center gap-2 text-[18px] font-extralight">
-				<CloudLightning size="16" strokeWidth="1" />
-				<span class="">Stormy night</span>
+		<div class="flex w-full flex-row border-t border-solid border-black py-6 pl-6">
+			<div class="right-now flex w-full text-[20px]">Later Today</div>
+			<div class="flex w-full flex-col">
+				<div
+					class="flex w-full flex-row items-center gap-2 align-middle text-[18px] font-extralight"
+				>
+					<CloudFog size="16" strokeWidth="1" />
+					<span class="flex">Foggy morning</span>
+				</div>
+				<div class="flex w-full flex-row items-center gap-2 text-[18px] font-extralight">
+					<CloudSun size="16" strokeWidth="1" />
+					<span class="">Cloudy noon</span>
+				</div>
+				<div class="flex w-full flex-row items-center gap-2 text-[18px] font-extralight">
+					<CloudRain size="16" strokeWidth="1" />
+					<span class="">Rainy afternoon</span>
+				</div>
+				<div class="flex w-full flex-row items-center gap-2 text-[18px] font-extralight">
+					<CloudLightning size="16" strokeWidth="1" />
+					<span class="">Stormy night</span>
+				</div>
 			</div>
 		</div>
-	</div>
+	{/if}
 </div>
+
 <!-- END OF WIDGETS -->
 <Ticker cities={cached_cities} onOpenWindow={openLocationsWindow} />
 {#if show_locations_window}
@@ -150,5 +178,4 @@
 			#ffff 99%
 		);
 	}
-
 </style>
