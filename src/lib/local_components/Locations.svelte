@@ -1,0 +1,149 @@
+<script lang="ts">
+	import type { City } from '$lib/types';
+	// @ts-ignore
+	import AutoComplete from 'simple-svelte-autocomplete';
+	import { X, Plus } from 'lucide-svelte';
+	import { slide, fly, fade } from 'svelte/transition';
+	import my_cities from '$lib/stores/my_cities';
+	const { onback, locations, onCitySelect } = $props<{
+		onback: () => void;
+		locations: City[];
+		onCitySelect: (location: City) => void;
+	}>();
+	type AddingLocationState = 'idle' | 'adding';
+	let addingLocationState: AddingLocationState = $state('idle');
+
+	function addLocation() {
+		addingLocationState = 'adding';
+	}
+
+	function cancelAddLocation() {
+		addingLocationState = 'idle';
+	}
+
+	function onkeydown(event: KeyboardEvent) {
+		if (event.key === 'Escape') {
+			onback();
+		}
+	}
+
+	interface CitySuggestion {
+		name: string;
+		country: string;
+		latitude: number;
+		longitude: number;
+	}
+
+	let fetching = $state(false);
+	let selected_city: CitySuggestion | undefined = $state();
+
+	function handleCitySelection(city: CitySuggestion) {
+		if (!city) {
+			return;
+		}
+		my_cities.set([
+			...$my_cities,
+			{
+				name: city.name,
+				country: city.country,
+				lat: city.latitude,
+				lon: city.longitude,
+				is_main: false
+			}
+		]);
+		cancelAddLocation();
+	}
+
+	async function searchFunction(search: string) {
+		try {
+			fetching = true;
+			const res = await fetch(`/api/cities?city_name=${search}`);
+			const data = await res.json();
+			console.log(data.results, 'data');
+			return data.results;
+		} catch (error) {
+			console.error(error);
+		} finally {
+			fetching = false;
+		}
+	}
+</script>
+
+<svelte:window {onkeydown} />
+<!-- <div class="modal-overlay absolute w-full h-full bg-elfin_yellow opacity-95"></div> -->
+<div
+	in:fly={{ duration: 400, x: 500 }}
+	out:fade={{ duration: 110 }}
+	class="colored-bg-locations fixed w-full h-full z-50 overflow-y-auto"
+>
+	<div class="flex flex-col pt-6">
+		<button class="pl-6" onclick={onback}><X size={26} strokeWidth={1} /></button>
+		<div class="flex flex-row items-center justify-between px-6 align-middle">
+			<div class="pb-4 pt-8 text-[48px]">Locations</div>
+			{#if addingLocationState == 'idle'}
+				<button
+					onclick={addLocation}
+					class="h-fit translate-y-2 rounded-full border border-black p-3"><Plus /></button
+				>
+			{:else}
+				<button
+					onclick={cancelAddLocation}
+					class="h-fit translate-y-2 rounded-full border border-black p-3"><X /></button
+				>
+			{/if}
+		</div>
+		{#if addingLocationState == 'adding'}
+			<div class="flex w-full flex-row bg-transparent px-4 py-2">
+				<AutoComplete
+					{searchFunction}
+					bind:selectedItem={selected_city}
+					labelFieldName="name"
+					maxItemsToShowInList={10}
+					showLoadingIndicator={true}
+					delay={300}
+					localFiltering={false}
+					onChange={handleCitySelection}
+                    className="bg-transparent w-full"
+                    inputClassName="bg-transparent border-b border-black w-full p-1 items-center align-middle"
+                    dropdownClassName="bg-transparent"
+                    noInputStyles={true}
+				>
+					<div slot="item" class="bg-transparent" let:item let:label>
+						{@html label}
+						<span>, {item.country}</span>
+					</div>
+				</AutoComplete>
+			</div>
+		{/if}
+		<div class="overflow-scroll-y max-h-[90%]">
+			{#each locations as location}
+				<div
+					role="button"
+					tabindex="0"
+					onclick={() => {
+						onCitySelect(location);
+						onback();
+					}}
+					onkeydown={(event) => {
+						if (event.key === 'Enter' || event.key === ' ') onCitySelect(location);
+					}}
+					in:fly={{ duration: 200, x: 200 }}
+					class="flex w-full flex-row justify-between border-t border-solid border-black px-6 py-6 text-lg font-[500]"
+				>
+					<div class="flex">{location.name}, {location.country}</div>
+					<div class="flex">{location.temp}</div>
+				</div>
+			{/each}
+		</div>
+	</div>
+</div>
+
+<style>
+	.colored-bg-locations {
+		background-image: radial-gradient(circle at top right, #ffff 1%, #e2ff1a 99%);
+	}
+
+    :global(.autocomplete-list) {
+        background-color: #e2ff1a;
+    }
+</style>

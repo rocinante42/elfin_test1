@@ -1,17 +1,17 @@
 <!-- // TODO: Scroll on location visible background FIX!!!!!!! -->
 <script lang="ts">
-	import { getCountryEmoji, normalizeTemperature, numberToWords } from '$lib/utils';
+	import { getCountryEmoji, normalizeTemperature, numberToWords } from '$lib/local_utils';
 	import { browser } from '$app/environment';
 	import my_cities from '$lib/stores/my_cities';
 	import todays_weather from '$lib/stores/today';
 	import { ThermometerSun, CloudSun, CloudFog, CloudRain, CloudLightning } from 'lucide-svelte';
-	import Locations from '$lib/components/Locations.svelte';
+	import Locations from '$lib/local_components/Locations.svelte';
 	import type { City } from '$lib/types';
 	import type { PageData } from './$types';
 	import { onMount } from 'svelte';
-	import Ticker from '$lib/components/Ticker.svelte';
+	import Ticker from '$lib/local_components/Ticker.svelte';
 	import type { TodaysWeather } from '$lib/api/weather';
-	import Legend from '$lib/components/Legend.svelte';
+	import Legend from '$lib/local_components/Legend.svelte';
 
 	// Ideally you'd poll the date from the api every hour or so but for now we'll just use the client date.
 	let date = new Date();
@@ -20,21 +20,26 @@
 	let day_name = date.toLocaleDateString('en-US', { weekday: 'long' });
 	let month_name = date.toLocaleDateString('en-US', { month: 'long' });
 
+    let main_city: City = $state($my_cities?.filter((c) => c.is_main)[0])
+
+    function setMainCity(city: City) {
+        main_city = city;
+    }
+
 	const today = new Date().toISOString().split('T')[0];
 
 	console.log(today, 'today');
 
 	let { data }: { data: PageData } = $props();
 	let show_locations_window = $state(false);
-	let cached_cities = $my_cities;
 
-	const GetCityWeather = async (): Promise<TodaysWeather | null> => {
-		const city = cached_cities.filter((c) => c.is_main)[0];
+	const GetCityWeather = async (main_city: City): Promise<TodaysWeather | null> => {
+        
 		const params = new URLSearchParams({
-			lat: String(city.lat),
-			lon: String(city.lon),
-			city_name: city.name,
-			country: city.country
+			lat: String(main_city.lat),
+			lon: String(main_city.lon),
+			city_name: main_city.name,
+			country: main_city.country
 		});
 		try {
 			const res = await fetch(`/api/weather?${params}`);
@@ -49,23 +54,41 @@
 
 	onMount(async () => {
 		if (browser) {
-			if (cached_cities.length == 0) {
+			if ($my_cities.length == 0) {
 				show_locations_window = true;
 			}
 		}
 
-		const todays = await GetCityWeather();
+		const todays = await GetCityWeather(main_city);
 		if (todays) {
 			todays_weather.set(todays);
 		}
 	});
 
+    $effect(()=> {
+        if (main_city) {
+            GetCityWeather(main_city).then((data) => {
+                if (data) {
+                    todays_weather.set(data);
+                }
+            });
+        }
+    })
+
 	function openLocationsWindow() {
 		show_locations_window = true;
 	}
 </script>
-
-<div class="container-main flex min-h-full w-full flex-col bg-elfin_yellow font-sans">
+{#if show_locations_window}
+	<Locations
+		onback={() => {
+			show_locations_window = false;
+		}}
+		locations={$my_cities}
+        onCitySelect={setMainCity}
+	/>
+{/if}
+<div class="container-main flex w-full h-full min-h-[100vh] flex-col bg-elfin_yellow font-sans">
 	{#if $todays_weather}
 		<div class="flex min-h-full w-full bg-white">
 			<!-- TOP CONTAINER -->
@@ -186,15 +209,8 @@
 </div>
 
 <!-- END OF WIDGETS -->
-<Ticker cities={cached_cities} onOpenWindow={openLocationsWindow} />
-{#if show_locations_window}
-	<Locations
-		onback={() => {
-			show_locations_window = false;
-		}}
-		locations={cached_cities}
-	/>
-{/if}
+<Ticker cities={$my_cities} onOpenWindow={openLocationsWindow} />
+
 
 <style>
 	.colored-bg {

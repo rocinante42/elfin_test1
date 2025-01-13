@@ -21,6 +21,7 @@ const my_cities = writable<City[]>(initialValue);
 
 my_cities.subscribe((value) => {
 	if (browser) {
+        console.log('updating my cities with...', value);
 		window.localStorage.setItem('my_cities', JSON.stringify(value));
 	}
 });
