@@ -52,4 +52,4 @@
 
 </script>
 
-    <svelte:component this={weatherIcons[weather]} size="16" strokeWidth={1}></svelte:component> {weather}
+<svelte:component this={weatherIcons[weather]} size="16" strokeWidth={1}></svelte:component> {weather}
