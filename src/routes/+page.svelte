@@ -90,6 +90,7 @@
 	}
 </script>
 
+    
 {#if show_locations_window}
 	<Locations
 		onback={() => {
@@ -100,6 +101,7 @@
 	/>
 {/if}
 <div class="flex bottom-0 h-full min-h-[100vh] flex-row bg-elfin_yellow">
+    
 	<div
 		class="container-main flex items-stretch h-full w-full flex-col overflow-auto bg-elfin_yellow font-sans"
 	>
@@ -221,6 +223,7 @@
 					{/if}
 				</div>
 			</div>
+            <Ticker cities={$my_cities} onOpenWindow={openLocationsWindow} />
 		{/if}
 	</div>
 	<div
@@ -235,8 +238,9 @@
 		/>
 	</div>
     <!-- END OF WIDGETS -->
-<Ticker cities={$my_cities} onOpenWindow={openLocationsWindow} />
+
 </div>
+
 
 
 
