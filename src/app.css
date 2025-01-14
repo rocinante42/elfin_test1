@@ -6,4 +6,11 @@ hmtl, body {
     font-family: 'Inter', sans-serif;
     min-height: 100vh;
     height: 100%;
+    overflow: hidden;
+}
+
+@layer components {
+    .colored-bg-locations {
+		background-image: radial-gradient(circle at top right, #ffff 1%, #e2ff1a 99%);
+	}
 }

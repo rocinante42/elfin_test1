@@ -3,7 +3,7 @@
 	// @ts-ignore
 	import AutoComplete from 'simple-svelte-autocomplete';
 	import { X, Plus, Trash } from 'lucide-svelte';
-	import { slide, fly, fade } from 'svelte/transition';
+	import { fly, fade } from 'svelte/transition';
 	import my_cities from '$lib/stores/my_cities';
 	const { onback, locations, onCitySelect } = $props<{
 		onback: () => void;
@@ -14,7 +14,7 @@
 	let addingLocationState: AddingLocationState = $state('idle');
 
 	function addLocation() {
-        console.log('add location');
+		console.log('add location');
 		addingLocationState = 'adding';
 	}
 
@@ -38,21 +38,48 @@
 	let fetching = $state(false);
 	let selected_city: CitySuggestion | undefined = $state();
 
-	function handleCitySelection(city: CitySuggestion) {
+	async function handleCitySelection(city: CitySuggestion) {
 		if (!city) {
 			return;
 		}
-		my_cities.set([
-			...$my_cities,
-			{
+
+		let lats: string[] = [];
+		let lons: string[] = [];
+
+        let new_city = {
 				name: city.name,
 				country: city.country,
 				lat: city.latitude,
 				lon: city.longitude,
-				is_main: false
+				is_main: false,
 			}
-		]);
-		cancelAddLocation();
+
+		let current_cities: City[] = [
+			...$my_cities,
+			new_city
+		];
+
+		current_cities.forEach((city) => {
+			lats.push(String(city?.lat));
+			lons.push(String(city?.lon));
+		});
+
+        cancelAddLocation();
+
+        // my_cities.update((cities) => [...cities, new_city]);
+        // selected_city = undefined;
+
+		const uri = `/api/weather/cities?lats=${lats.join(',')}&lons=${lons.join(',')}`;
+
+		const response = await fetch(uri);
+		const data = await response.json();
+
+		data.forEach((city: { current: { temperature_2m: number } }, index: number) => {
+			current_cities[index].temp = city.current.temperature_2m;
+		});
+
+		my_cities.set(current_cities);
+
         selected_city = undefined;
 	}
 
@@ -71,11 +98,9 @@
 	}
 </script>
 
-<svelte:window {onkeydown} />
+
 <div
-	in:fly={{ duration: 400, x: 500 }}
-	out:fade={{ duration: 110 }}
-	class="colored-bg-locations fixed w-full h-full z-50 overflow-y-auto"
+	class="colored-bg-locations h-full w-full overflow-y-auto"
 >
 	<div class="flex flex-col pt-6">
 		<button class="pl-6" onclick={onback}><X size={26} strokeWidth={1} /></button>
@@ -96,19 +121,19 @@
 		{#if addingLocationState == 'adding'}
 			<div class="flex w-full flex-row bg-transparent px-4 py-2">
 				<AutoComplete
-                    tabindex="0"
-                    placeholder="City Name"
-					searchFunction={searchFunction}
+					tabindex="0"
+					placeholder="City Name"
+					{searchFunction}
 					bind:selectedItem={selected_city}
 					labelFieldName="name"
 					showLoadingIndicator={true}
 					delay={300}
 					localFiltering={false}
 					onChange={handleCitySelection}
-                    className="bg-transparent w-full"
-                    inputClassName="bg-transparent border-b border-black w-full p-1 items-center align-middle"
-                    dropdownClassName="bg-transparent"
-                    noInputStyles={true}
+					className="bg-transparent w-full"
+					inputClassName="bg-transparent border-b border-black w-full p-1 items-center align-middle placeholder-black"
+					dropdownClassName="bg-transparent"
+					noInputStyles={true}
 				>
 					<div slot="item" class="bg-transparent" let:item let:label>
 						{@html label}<span>, {item.admin1}, {item.country}</span>
@@ -129,23 +154,26 @@
 						if (event.key === 'Enter' || event.key === ' ') onCitySelect(location);
 					}}
 					in:fly={{ duration: 200, x: 200 }}
-                    out:fly={{ duration: 200, x:-200 }}
+					out:fly={{ duration: 200, x: -200 }}
 					class="flex w-full flex-row justify-between border-t border-solid border-black px-6 py-6 text-lg font-[500]"
 				>
 					<div class="flex">{location.name}, {location.country}</div>
-					<div class="flex">{location.temp}</div>
-                    <div class="flex">
-                        <button
-                            onclick={(event) => {
-                                // event.preventDefault();
-                                event.stopPropagation();
-                                my_cities.update((cities) => cities.filter((city) => city.name !== location.name));
-                            }}
-                            class="h-fit"
-                        >
-                            <Trash strokeWidth={1} />
-                        </button>
-                        </div>
+					
+					<div class="flex gap-4">
+                        {#if location.temp}
+                        <div class="flex">{location.temp}° </div>
+                        {/if}
+						<button
+							onclick={(event) => {
+								// event.preventDefault();
+								event.stopPropagation();
+								my_cities.update((cities) => cities.filter((city) => city.lat !== location.lat && city.lon !== location.lon));
+							}}
+							class="h-fit"
+						>
+							<Trash strokeWidth={1} />
+						</button>
+					</div>
 				</div>
 			{/each}
 		</div>
@@ -157,11 +185,11 @@
 		background-image: radial-gradient(circle at top right, #ffff 1%, #e2ff1a 99%);
 	}
 
-    :global(.autocomplete-list-item) {
-        background-color: #e2ff1a;
-    }
+	:global(.autocomplete-list-item) {
+		background-color: #e2ff1a;
+	}
 
-    :global(.autocomplete-list) {
-        background-color: #e2ff1a !important;
-    }
+	:global(.autocomplete-list) {
+		background-color: #e2ff1a !important;
+	}
 </style>

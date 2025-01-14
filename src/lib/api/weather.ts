@@ -49,14 +49,13 @@ export const weatherKeys = [
     'Partly cloudy',
     'Mostly cloudy',
     'Cloudy',
-    'Stormy',
     'Rainy',
+    'Showery',
     'Snowy',
 ]
 
 export const fetchWeather = async (lat: number, lon: number) => {
 
-	// const weather_api = 'https://api.open-meteo.com/v1/forecast';
     const weather_api = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,precipitation,rain,showers,snowfall,cloud_cover&hourly=temperature_2m,apparent_temperature,rain,showers,snowfall,cloud_cover&forecast_days=1`
 
 	try {

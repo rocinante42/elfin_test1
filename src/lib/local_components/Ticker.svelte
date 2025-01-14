@@ -7,13 +7,13 @@
     export let onOpenWindow: () => void;
 </script>
 
-<footer class="sticky bottom-0 max-h-24 bg-elfin_yellow">
+<footer class="sticky bottom-0 max-h-24 bg-elfin_yellow md:invisible">
 	<div class="flex flex-row justify-between border-b border-t border-solid border-black">
 		<div class="flex-grow-2 flex w-full overflow-hidden">
 			<div class="flex max-h-16 items-center w-full">
-				<p class="ticker flex h-[20px] w-full">
+				<p class="ticker flex h-[20px]">
 					{#each cities as location}
-						<span class="marquee mr-4">{location.name}</span>
+						<span class="marquee mr-4">{location.name} {location.temp}°</span> 
 					{/each}
 				</p>
 			</div>
@@ -33,14 +33,16 @@
 		animation: marquee 15s linear infinite;
 		white-space: nowrap;
 		overflow: hidden;
+        min-width: fit-content;
 	}
 
 	@keyframes marquee {
 		0% {
-			transform: translate(100%, 0);
+			transform: translate(680px, 0);
 		}
 		100% {
-			transform: translate(-100%, 0);
+			transform: translateX(-100%);
 		}
 	}
+
 </style>
