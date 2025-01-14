@@ -234,10 +234,11 @@
 			onCitySelect={setMainCity}
 		/>
 	</div>
+    <!-- END OF WIDGETS -->
+<Ticker cities={$my_cities} onOpenWindow={openLocationsWindow} />
 </div>
 
-<!-- END OF WIDGETS -->
-<Ticker cities={$my_cities} onOpenWindow={openLocationsWindow} />
+
 
 <style>
 	.colored-bg {

@@ -6,12 +6,11 @@
     export let cities: City[] = [];
     export let onOpenWindow: () => void;
 </script>
-
-<footer class="sticky bottom-0 max-h-24 md:max-h-0 lg:max-h-0 bg-elfin_yellow md:invisible">
+<div class="absolute bottom-0 md:max-h-0 md:h-0 lg:h-0 lg:max-h-0 bg-elfin_yellow md:invisible">
 	<div class="flex flex-row justify-between border-b border-t border-solid border-black">
 		<div class="flex-grow-2 flex w-full overflow-hidden">
 			<div class="flex max-h-16 items-center w-full">
-				<p class="ticker flex h-[20px]">
+				<p class="ticker flex h-[20px] md:h-0 lg:h-0">
 					{#each cities as location}
 						<span class="marquee mr-4">{location.name} {location.temp}°</span> 
 					{/each}
@@ -26,7 +25,7 @@
 			><Earth size="25" strokeWidth="1" /></button
 		>
 	</div>
-</footer>
+</div>
 <style>
 
 	.ticker {
