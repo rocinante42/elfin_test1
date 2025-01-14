@@ -99,19 +99,17 @@
 		onCitySelect={setMainCity}
 	/>
 {/if}
-<div class="flex flex-row">
+<div class="flex bottom-0 h-full min-h-[100vh] flex-row bg-elfin_yellow">
 	<div
-		class="container-main flex h-full min-h-[100vh] w-full flex-col overflow-scroll bg-elfin_yellow font-sans"
+		class="container-main flex items-stretch h-full w-full flex-col overflow-auto bg-elfin_yellow font-sans"
 	>
 		{#if $todays_weather}
-			<div class="flex min-h-full w-full bg-white">
+			<div class="flex min-h-full h-full  w-full bg-white">
 				<!-- TOP CONTAINER -->
 				<div class="colored-bg h-full min-h-full w-full px-6 pb-12 pt-24">
 					<!-- LOCATION -->
-					<button
-						type="button"
-						onclick={openLocationsWindow}
-						class="location flex cursor-pointer flex-col"
+					<div
+						class="location flex flex-col"
 						aria-label="Open locations window"
 					>
 						<div class="font-semibold">
@@ -119,7 +117,7 @@
 							{$todays_weather.city_name}, {$todays_weather.country}
 						</div>
 						<div class="font-thin">{$todays_weather.lat}° N {$todays_weather.lon}° E</div>
-					</button>
+					</div>
 					<!-- END OF LOCATION -->
 
 					<!-- TEMPERATURE -->
@@ -148,7 +146,7 @@
 				</div>
 			</div>
 			<!-- WIDGETS -->
-			<div class="flex h-full overflow-auto w-full flex-row md:h-[50vh] lg:h-[50vh]">
+			<div class="flex h-full  overflow-auto w-full flex-row md:h-[50vh] lg:h-[50vh]">
 				<div class="flex h-full w-full flex-col">
 					<div class="flex w-full flex-row border-t border-solid border-black py-6 pl-6">
 						<div class="right-now flex w-full text-[20px]">Right Now</div>
@@ -226,7 +224,7 @@
 		{/if}
 	</div>
 	<div
-		class="invisible overflow-hidden max-h-[100vh] max-w-0 border-l border-t border-solid border-black md:visible md:w-full md:max-w-full lg:visible lg:w-full lg:max-w-full"
+		class="invisible overflow-hidden  max-w-0 border-l border-t border-solid border-black md:visible md:w-full md:max-w-full lg:visible lg:w-full lg:max-w-full"
 	>
 		<Locations
 			onback={() => {

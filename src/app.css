@@ -7,6 +7,11 @@ hmtl, body {
     height: 100%;
 }
 
+html {
+    box-sizing: border-box;
+    position: relative;
+  }
+
 @layer components {
     .colored-bg-locations {
 		background-image: radial-gradient(circle at top right, #ffff 1%, #e2ff1a 99%);
