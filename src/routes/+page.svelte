@@ -243,7 +243,7 @@
 <style>
 	.colored-bg {
 		background-image: radial-gradient(
-			circle at top right in hsl shorter hue,
+			circle at top right,
 			#e2ff1a 1%,
 			#ffff 99%
 		);
