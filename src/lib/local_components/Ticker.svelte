@@ -6,7 +6,7 @@
     export let cities: City[] = [];
     export let onOpenWindow: () => void;
 </script>
-<div class="fixed bottom-0 left-0 z-50 max-w-[100vw] md:max-h-0 md:h-[0vh] lg:h-0 lg:max-h-0 bg-elfin_yellow md:invisible">
+<div class="fixed bottom-0 w-full left-0 z-50 max-w-[100vw] md:max-h-0 md:h-[0vh] lg:h-0 lg:max-h-0 bg-elfin_yellow md:invisible">
 	<div class="flex flex-row justify-between border-b border-t border-solid border-black">
 		<div class="flex-grow-2 flex w-full overflow-hidden">
 			<div class="flex max-h-16 items-center w-full">
