@@ -69,13 +69,11 @@ function filterByTimeOfDayAndGetMax(items: number[], dates: string[]): {[key in 
 
 function findClosestDate(input: Date, sample: string[]): string | null {
     if (sample.length === 0) {
-      return null; // Return null if the sample list is empty
+      return null; 
     }
   
-    // Convert input date to its timestamp for easier calculations
     const inputTime = input.getTime();
   
-    // Use reduce to find the closest date
     const closestDate = sample.reduce((closest, current) => {
       const closestTime = new Date(closest).getTime();
       const currentTime = new Date(current).getTime();
@@ -84,12 +82,10 @@ function findClosestDate(input: Date, sample: string[]): string | null {
         ? current
         : closest;
     });
-    console.log("findClosestDate closestDate", new Date(closestDate).toISOString());
     return closestDate;
   }
 
 
-// Gets the cities weather information given a pair of coordinates lat-lon
 export const GET: RequestHandler = async ({ url }) => {
 	const lat = url.searchParams.get('lat');
 	const lon = url.searchParams.get('lon');
@@ -100,8 +96,6 @@ export const GET: RequestHandler = async ({ url }) => {
 	if (!lat || !lon || !city_name || !country) {
 		return error(400, 'Missing location parameter');
 	}
-    console.log("GET /weather/server.ts lat", lat);
-    console.log("GET /weather/server.ts lon", lon);
 
     try {
         const weatherData = await fetchWeather(Number(lat), Number(lon));
@@ -111,14 +105,6 @@ export const GET: RequestHandler = async ({ url }) => {
         if (!closestTime) {
             throw new Error('No weather data available');
         }
-        // const index = weatherData.hourly.time.indexOf(closestTime);
-        // console.log("found index is: ", index);
-        // const current_temp = weatherData.hourly.temperature_2m[index];
-        // const feels_like = weatherData.hourly.apparent_temperature[index];
-        // const rain = weatherData.hourly.rain[index];
-        // const showers = weatherData.hourly.showers[index];
-        // const snowfall = weatherData.hourly.snowfall[index];
-        // const cloudcover = weatherData.hourly.cloud_cover[index];
 
         const current_temp = weatherData.current.temperature_2m;
         const feels_like = weatherData.current.apparent_temperature;

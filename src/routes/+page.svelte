@@ -13,28 +13,37 @@
 	import type { TodaysWeather } from '$lib/api/weather';
 	import Legend from '$lib/local_components/Legend.svelte';
 
-	// Ideally you'd poll the date from the api every hour or so but for now we'll just use the client date.
+	// Ideally I'd poll the date every hour or 5 minutes or so... but this will work for now
 	let date = new Date();
 	let day = date.getDate();
-	let month = date.getMonth() + 1;
 	let day_name = date.toLocaleDateString('en-US', { weekday: 'long' });
 	let month_name = date.toLocaleDateString('en-US', { month: 'long' });
+	let later_today = ['morning', 'noon', 'afternoon', 'night'];
+	let hour = date.getHours();
+    if (hour >= 12) {
+		later_today = ['noon', 'afternoon', 'night'];
+	}
+    if (hour >= 14) {
+		later_today = ['afternoon', 'night'];
+	}
+	if (hour >= 18) {
+		later_today = ['night'];
+	}
+	
+	
 
-    let main_city: City = $state($my_cities?.filter((c) => c.is_main)[0])
+	function laterTodayContains(time: string) {
+		return later_today.findIndex((t) => t === time) !== -1;
+	}
 
-    function setMainCity(city: City) {
-        main_city = city;
-    }
+	let main_city: City = $state($my_cities?.filter((c) => c.is_main)[0]);
+	function setMainCity(city: City) {
+		main_city = city;
+	}
 
-	const today = new Date().toISOString().split('T')[0];
-
-	console.log(today, 'today');
-
-	let { data }: { data: PageData } = $props();
 	let show_locations_window = $state(false);
 
 	const GetCityWeather = async (main_city: City): Promise<TodaysWeather | null> => {
-        
 		const params = new URLSearchParams({
 			lat: String(main_city.lat),
 			lon: String(main_city.lon),
@@ -65,30 +74,31 @@
 		}
 	});
 
-    $effect(()=> {
-        if (main_city) {
-            GetCityWeather(main_city).then((data) => {
-                if (data) {
-                    todays_weather.set(data);
-                }
-            });
-        }
-    })
+	$effect(() => {
+		if (main_city) {
+			GetCityWeather(main_city).then((data) => {
+				if (data) {
+					todays_weather.set(data);
+				}
+			});
+		}
+	});
 
 	function openLocationsWindow() {
 		show_locations_window = true;
 	}
 </script>
+
 {#if show_locations_window}
 	<Locations
 		onback={() => {
 			show_locations_window = false;
 		}}
 		locations={$my_cities}
-        onCitySelect={setMainCity}
+		onCitySelect={setMainCity}
 	/>
 {/if}
-<div class="container-main flex w-full h-full min-h-[100vh] flex-col bg-elfin_yellow font-sans">
+<div class="container-main flex h-full min-h-[100vh] w-full flex-col bg-elfin_yellow font-sans">
 	{#if $todays_weather}
 		<div class="flex min-h-full w-full bg-white">
 			<!-- TOP CONTAINER -->
@@ -145,8 +155,6 @@
 					>
 				</div>
 				<div class="flex w-full flex-row items-center gap-2 text-[18px] font-extralight">
-					<!-- <CloudSun size="16" strokeWidth="1" />
-					<span class="">Partly cloudy</span> -->
 					<Legend
 						rain={$todays_weather.rain}
 						snow={$todays_weather.snowfall}
@@ -156,61 +164,62 @@
 				</div>
 			</div>
 		</div>
+        {#if $todays_weather.afternoon && $todays_weather.night && $todays_weather.morning && $todays_weather.noon}
 		<div class="flex w-full flex-row border-t border-solid border-black py-6 pl-6">
 			<div class="right-now flex w-full text-[20px]">Later Today</div>
 			<div class="flex w-full flex-col">
-				<div
-					class="flex w-full flex-row items-center gap-2 align-middle text-[18px] font-extralight"
-				>
-					<Legend
-						rain={$todays_weather.morning.rain}
-						snow={$todays_weather.morning.snowfall}
-						cloud_cover={$todays_weather.morning.cloudcover}
-						showers={$todays_weather.morning.showers}
-						appendix="morning"
-					/>
-				</div>
-                <div
-					class="flex w-full flex-row items-center gap-2 align-middle text-[18px] font-extralight"
-				>
-					<Legend
-						rain={$todays_weather.noon.rain}
-						snow={$todays_weather.noon.snowfall}
-						cloud_cover={$todays_weather.noon.cloudcover}
-						showers={$todays_weather.noon.showers}
-						appendix="noon"
-					/>
-				</div>
-                <div
-					class="flex w-full flex-row items-center gap-2 align-middle text-[18px] font-extralight"
-				>
-					<Legend
-						rain={$todays_weather.afternoon.rain}
-						snow={$todays_weather.afternoon.snowfall}
-						cloud_cover={$todays_weather.afternoon.cloudcover}
-						showers={$todays_weather.afternoon.showers}
-						appendix="afternoon"
-					/>
-				</div>
-                <div
-					class="flex w-full flex-row items-center gap-2 align-middle text-[18px] font-extralight"
-				>
-					<Legend
-						rain={$todays_weather.night.rain}
-						snow={$todays_weather.night.snowfall}
-						cloud_cover={$todays_weather.night.cloudcover}
-						showers={$todays_weather.night.showers}
-						appendix="night"
-					/>
-				</div>
+					<div
+						class="flex w-full flex-row items-center gap-2 align-middle text-[18px] font-extralight"
+					>
+						<Legend
+							rain={$todays_weather.morning.rain}
+							snow={$todays_weather.morning.snowfall}
+							cloud_cover={$todays_weather.morning.cloudcover}
+							showers={$todays_weather.morning.showers}
+							appendix="morning"
+						/>
+					</div>
+					<div
+						class="flex w-full flex-row items-center gap-2 align-middle text-[18px] font-extralight"
+					>
+						<Legend
+							rain={$todays_weather.noon.rain}
+							snow={$todays_weather.noon.snowfall}
+							cloud_cover={$todays_weather.noon.cloudcover}
+							showers={$todays_weather.noon.showers}
+							appendix="noon"
+						/>
+					</div>
+					<div
+						class="flex w-full flex-row items-center gap-2 align-middle text-[18px] font-extralight"
+					>
+						<Legend
+							rain={$todays_weather.afternoon.rain}
+							snow={$todays_weather.afternoon.snowfall}
+							cloud_cover={$todays_weather.afternoon.cloudcover}
+							showers={$todays_weather.afternoon.showers}
+							appendix="afternoon"
+						/>
+					</div>
+					<div
+						class="flex w-full flex-row items-center gap-2 align-middle text-[18px] font-extralight"
+					>
+						<Legend
+							rain={$todays_weather.night.rain}
+							snow={$todays_weather.night.snowfall}
+							cloud_cover={$todays_weather.night.cloudcover}
+							showers={$todays_weather.night.showers}
+							appendix="night"
+						/>
+					</div>
 			</div>
 		</div>
+        {/if}
 	{/if}
 </div>
 
 <!-- END OF WIDGETS -->
 <Ticker cities={$my_cities} onOpenWindow={openLocationsWindow} />
-
 
 <style>
 	.colored-bg {

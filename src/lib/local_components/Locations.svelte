@@ -2,7 +2,7 @@
 	import type { City } from '$lib/types';
 	// @ts-ignore
 	import AutoComplete from 'simple-svelte-autocomplete';
-	import { X, Plus } from 'lucide-svelte';
+	import { X, Plus, Trash } from 'lucide-svelte';
 	import { slide, fly, fade } from 'svelte/transition';
 	import my_cities from '$lib/stores/my_cities';
 	const { onback, locations, onCitySelect } = $props<{
@@ -14,6 +14,7 @@
 	let addingLocationState: AddingLocationState = $state('idle');
 
 	function addLocation() {
+        console.log('add location');
 		addingLocationState = 'adding';
 	}
 
@@ -52,6 +53,7 @@
 			}
 		]);
 		cancelAddLocation();
+        selected_city = undefined;
 	}
 
 	async function searchFunction(search: string) {
@@ -70,7 +72,6 @@
 </script>
 
 <svelte:window {onkeydown} />
-<!-- <div class="modal-overlay absolute w-full h-full bg-elfin_yellow opacity-95"></div> -->
 <div
 	in:fly={{ duration: 400, x: 500 }}
 	out:fade={{ duration: 110 }}
@@ -95,10 +96,11 @@
 		{#if addingLocationState == 'adding'}
 			<div class="flex w-full flex-row bg-transparent px-4 py-2">
 				<AutoComplete
-					{searchFunction}
+                    tabindex="0"
+                    placeholder="City Name"
+					searchFunction={searchFunction}
 					bind:selectedItem={selected_city}
 					labelFieldName="name"
-					maxItemsToShowInList={10}
 					showLoadingIndicator={true}
 					delay={300}
 					localFiltering={false}
@@ -109,8 +111,7 @@
                     noInputStyles={true}
 				>
 					<div slot="item" class="bg-transparent" let:item let:label>
-						{@html label}
-						<span>, {item.country}</span>
+						{@html label}<span>, {item.admin1}, {item.country}</span>
 					</div>
 				</AutoComplete>
 			</div>
@@ -128,10 +129,23 @@
 						if (event.key === 'Enter' || event.key === ' ') onCitySelect(location);
 					}}
 					in:fly={{ duration: 200, x: 200 }}
+                    out:fly={{ duration: 200, x:-200 }}
 					class="flex w-full flex-row justify-between border-t border-solid border-black px-6 py-6 text-lg font-[500]"
 				>
 					<div class="flex">{location.name}, {location.country}</div>
 					<div class="flex">{location.temp}</div>
+                    <div class="flex">
+                        <button
+                            onclick={(event) => {
+                                // event.preventDefault();
+                                event.stopPropagation();
+                                my_cities.update((cities) => cities.filter((city) => city.name !== location.name));
+                            }}
+                            class="h-fit"
+                        >
+                            <Trash strokeWidth={1} />
+                        </button>
+                        </div>
 				</div>
 			{/each}
 		</div>
@@ -143,7 +157,11 @@
 		background-image: radial-gradient(circle at top right, #ffff 1%, #e2ff1a 99%);
 	}
 
-    :global(.autocomplete-list) {
+    :global(.autocomplete-list-item) {
         background-color: #e2ff1a;
+    }
+
+    :global(.autocomplete-list) {
+        background-color: #e2ff1a !important;
     }
 </style>

@@ -2,12 +2,10 @@ import type { RequestHandler } from './$types';
 import { error } from '@sveltejs/kit';
 
 const get_coordinates = async (city: string) => {
-    const uri = `https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=10&language=en&format=json`
+    const uri = `https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=20&language=en&format=json`
     console.warn("GET /cities/server.ts get_coordinates uri", uri);
 
     const response = await fetch(uri);
-
-    console.log("GET /cities/server.ts get_coordinates response", response);
 
     if (!response.ok) {
         throw new Error('Failed to fetch coordinates');
