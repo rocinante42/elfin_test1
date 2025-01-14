@@ -171,7 +171,7 @@
 						</div>
 					</div>
 					{#if $todays_weather.afternoon && $todays_weather.night && $todays_weather.morning && $todays_weather.noon}
-						<div class="flex w-full flex-row border-t border-solid border-black py-6 pl-6">
+						<div class="flex w-full flex-row border-t border-solid border-black pt-6 pb-16 md:pb-6 pl-6">
 							<div class="right-now flex w-full text-[20px]">Later Today</div>
 							<div class="flex w-full flex-col">
 								<div
