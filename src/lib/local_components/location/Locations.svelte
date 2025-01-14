@@ -144,7 +144,7 @@
 			</div>
 		{/if}
 		<div class="overflow-y-auto max-h-[90vh]">
-			{#each locations as location}
+			{#each locations as location, index}
 				<div
 					role="button"
 					tabindex="0"
@@ -162,9 +162,11 @@
 					<div class="flex">{location.name}, {location.country}</div>
 					
 					<div class="flex gap-4">
+                        {#key $my_cities[index].temp}
                         {#if location.temp}
                         <div class="flex">{location.temp}° </div>
                         {/if}
+                        {/key}
 						<button
 							onclick={(event) => {
 								// event.preventDefault();

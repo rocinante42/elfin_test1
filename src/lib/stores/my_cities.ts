@@ -3,7 +3,7 @@ import { writable } from 'svelte/store';
 import type { City } from '$lib/types';
 
 const defaultValue: City[] = [
-	{ name: 'San Salvador', country: 'El Salvador', lat: 13.68935, lon: -89.18718, is_main: true, temp: 0 },
+	{ name: 'San Salvador', country: 'El Salvador', lat: 13.68935, lon: -89.18718, is_main: true, temp: 30 },
 ];
 let initialValue;
 
@@ -34,17 +34,18 @@ export const syncCities = async (cities: City[]) => {
 		const response = await fetch(uri);
 		const data = await response.json();
 
-		data.forEach((city: { current: { temperature_2m: number } }, index: number) => {
-			current_cities[index].temp = city.current.temperature_2m;
-		});
-
+        if (Array.isArray(data)) {
+            data.forEach((city: { current: { temperature_2m: number } }, index: number) => {
+                current_cities[index].temp = city.current.temperature_2m;
+            });
+        } else {
+            current_cities[0].temp = data.current.temperature_2m;
+        }
 		my_cities.set(current_cities);
 }
 
 my_cities.subscribe(async (value) => {
-
-
-
+    console.log('my_cities', value);
 	if (browser) {
 		window.localStorage.setItem('my_cities', JSON.stringify(value));
 	}
