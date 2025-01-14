@@ -141,7 +141,7 @@
 				</AutoComplete>
 			</div>
 		{/if}
-		<div class="overflow-scroll-y max-h-[90%]">
+		<div class="overflow-y-auto max-h-[90%]">
 			{#each locations as location}
 				<div
 					role="button"

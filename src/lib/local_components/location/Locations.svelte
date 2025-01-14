@@ -143,7 +143,7 @@
 				</AutoComplete>
 			</div>
 		{/if}
-		<div class="overflow-scroll-y max-h-[90%]">
+		<div class="overflow-y-auto max-h-[90%]">
 			{#each locations as location}
 				<div
 					role="button"
@@ -191,5 +191,7 @@
 
 	:global(.autocomplete-list) {
 		background-color: #e2ff1a !important;
+        top: 0 !important;
+        max-height: 30vh !important;
 	}
 </style>

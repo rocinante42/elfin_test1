@@ -7,7 +7,7 @@
     export let onOpenWindow: () => void;
 </script>
 
-<footer class="sticky bottom-0 max-h-24 bg-elfin_yellow md:invisible">
+<footer class="bottom-0 max-h-24 bg-elfin_yellow md:invisible">
 	<div class="flex flex-row justify-between border-b border-t border-solid border-black">
 		<div class="flex-grow-2 flex w-full overflow-hidden">
 			<div class="flex max-h-16 items-center w-full">
