@@ -100,141 +100,142 @@
 	/>
 {/if}
 <div class="flex flex-row">
-<div class="container-main flex h-full min-h-[100vh] w-full flex-col bg-elfin_yellow font-sans">
-	{#if $todays_weather}
-		<div class="flex min-h-full w-full bg-white">
-			<!-- TOP CONTAINER -->
-			<div class="colored-bg h-full min-h-full w-full px-6 pb-12 pt-24">
-				<!-- LOCATION -->
-				<button
-					type="button"
-					onclick={openLocationsWindow}
-					class="location flex cursor-pointer flex-col"
-					aria-label="Open locations window"
-				>
-					<div class="font-semibold">
-						{getCountryEmoji($todays_weather.country || '')}
-						{$todays_weather.city_name}, {$todays_weather.country}
-					</div>
-					<div class="font-thin">{$todays_weather.lat}° N {$todays_weather.lon}° E</div>
-				</button>
-				<!-- END OF LOCATION -->
+	<div
+		class="container-main flex h-full min-h-[100vh] w-full flex-col overflow-scroll bg-elfin_yellow font-sans"
+	>
+		{#if $todays_weather}
+			<div class="flex min-h-full w-full bg-white">
+				<!-- TOP CONTAINER -->
+				<div class="colored-bg h-full min-h-full w-full px-6 pb-12 pt-24">
+					<!-- LOCATION -->
+					<button
+						type="button"
+						onclick={openLocationsWindow}
+						class="location flex cursor-pointer flex-col"
+						aria-label="Open locations window"
+					>
+						<div class="font-semibold">
+							{getCountryEmoji($todays_weather.country || '')}
+							{$todays_weather.city_name}, {$todays_weather.country}
+						</div>
+						<div class="font-thin">{$todays_weather.lat}° N {$todays_weather.lon}° E</div>
+					</button>
+					<!-- END OF LOCATION -->
 
-				<!-- TEMPERATURE -->
-				<div
-					class="mt-32 text-left font-sans text-[80px] font-[300] leading-[80px] tracking-[-2px]"
-				>
-					<div class="flex flex-row">
-						<div class="">
-							{$todays_weather.current_temp &&
-								numberToWords(Math.floor($todays_weather.current_temp))}<span class="font-[100]"
-								>°</span
-							>
+					<!-- TEMPERATURE -->
+					<div
+						class="mt-32 text-left font-sans text-[80px] font-[300] leading-[80px] tracking-[-2px]"
+					>
+						<div class="flex flex-row">
+							<div class="">
+								{$todays_weather.current_temp &&
+									numberToWords(Math.floor($todays_weather.current_temp))}<span class="font-[100]"
+									>°</span
+								>
+							</div>
 						</div>
 					</div>
-				</div>
-				<!-- END OF TEMPERATURE -->
+					<!-- END OF TEMPERATURE -->
 
-				<!-- DATE -->
-				<div class="mt-6 flex items-center gap-2 align-middle text-[20px] font-extralight">
-					{day_name}
-					<span class="flex h-[1px] flex-grow bg-black"></span>
-					{month_name}
-					{day}
+					<!-- DATE -->
+					<div class="mt-6 flex items-center gap-2 align-middle text-[20px] font-extralight">
+						{day_name}
+						<span class="flex h-[1px] flex-grow bg-black"></span>
+						{month_name}
+						{day}
+					</div>
+					<!-- END OF DATE -->
 				</div>
-				<!-- END OF DATE -->
 			</div>
-		</div>
-		<!-- WIDGETS -->
-		<div class="flex flex-row w-full h-full md:h-[50vh] lg:h-[50vh]">
-			<div class="flex flex-col w-full h-full">
-				<div class="flex w-full flex-row border-t border-solid border-black py-6 pl-6">
-					<div class="right-now flex w-full text-[20px]">Right Now</div>
-					<div class="flex w-full flex-col">
-						<div class="flex w-full flex-row items-center gap-2 text-[18px] font-extralight">
-							<ThermometerSun size="16" strokeWidth="1" />
-							<span class=""
-								>Feels like {$todays_weather &&
-									normalizeTemperature($todays_weather.feels_like, 0)}</span
-							>
-						</div>
-						<div class="flex w-full flex-row items-center gap-2 text-[18px] font-extralight">
-							<Legend
-								rain={$todays_weather.rain}
-								snow={$todays_weather.snowfall}
-								cloud_cover={$todays_weather.cloudcover}
-								showers={$todays_weather.showers}
-							/>
-						</div>
-					</div>
-				</div>
-				{#if $todays_weather.afternoon && $todays_weather.night && $todays_weather.morning && $todays_weather.noon}
+			<!-- WIDGETS -->
+			<div class="flex h-full overflow-auto w-full flex-row md:h-[50vh] lg:h-[50vh]">
+				<div class="flex h-full w-full flex-col">
 					<div class="flex w-full flex-row border-t border-solid border-black py-6 pl-6">
-						<div class="right-now flex w-full text-[20px]">Later Today</div>
+						<div class="right-now flex w-full text-[20px]">Right Now</div>
 						<div class="flex w-full flex-col">
-							<div
-								class="flex w-full flex-row items-center gap-2 align-middle text-[18px] font-extralight"
-							>
-								<Legend
-									rain={$todays_weather.morning.rain}
-									snow={$todays_weather.morning.snowfall}
-									cloud_cover={$todays_weather.morning.cloudcover}
-									showers={$todays_weather.morning.showers}
-									appendix="morning"
-								/>
+							<div class="flex w-full flex-row items-center gap-2 text-[18px] font-extralight">
+								<ThermometerSun size="16" strokeWidth="1" />
+								<span class=""
+									>Feels like {$todays_weather &&
+										normalizeTemperature($todays_weather.feels_like, 0)}</span
+								>
 							</div>
-							<div
-								class="flex w-full flex-row items-center gap-2 align-middle text-[18px] font-extralight"
-							>
+							<div class="flex w-full flex-row items-center gap-2 text-[18px] font-extralight">
 								<Legend
-									rain={$todays_weather.noon.rain}
-									snow={$todays_weather.noon.snowfall}
-									cloud_cover={$todays_weather.noon.cloudcover}
-									showers={$todays_weather.noon.showers}
-									appendix="noon"
-								/>
-							</div>
-							<div
-								class="flex w-full flex-row items-center gap-2 align-middle text-[18px] font-extralight"
-							>
-								<Legend
-									rain={$todays_weather.afternoon.rain}
-									snow={$todays_weather.afternoon.snowfall}
-									cloud_cover={$todays_weather.afternoon.cloudcover}
-									showers={$todays_weather.afternoon.showers}
-									appendix="afternoon"
-								/>
-							</div>
-							<div
-								class="flex w-full flex-row items-center gap-2 align-middle text-[18px] font-extralight"
-							>
-								<Legend
-									rain={$todays_weather.night.rain}
-									snow={$todays_weather.night.snowfall}
-									cloud_cover={$todays_weather.night.cloudcover}
-									showers={$todays_weather.night.showers}
-									appendix="night"
+									rain={$todays_weather.rain}
+									snow={$todays_weather.snowfall}
+									cloud_cover={$todays_weather.cloudcover}
+									showers={$todays_weather.showers}
 								/>
 							</div>
 						</div>
 					</div>
-				{/if}
+					{#if $todays_weather.afternoon && $todays_weather.night && $todays_weather.morning && $todays_weather.noon}
+						<div class="flex w-full flex-row border-t border-solid border-black py-6 pl-6">
+							<div class="right-now flex w-full text-[20px]">Later Today</div>
+							<div class="flex w-full flex-col">
+								<div
+									class="flex w-full flex-row items-center gap-2 align-middle text-[18px] font-extralight"
+								>
+									<Legend
+										rain={$todays_weather.morning.rain}
+										snow={$todays_weather.morning.snowfall}
+										cloud_cover={$todays_weather.morning.cloudcover}
+										showers={$todays_weather.morning.showers}
+										appendix="morning"
+									/>
+								</div>
+								<div
+									class="flex w-full flex-row items-center gap-2 align-middle text-[18px] font-extralight"
+								>
+									<Legend
+										rain={$todays_weather.noon.rain}
+										snow={$todays_weather.noon.snowfall}
+										cloud_cover={$todays_weather.noon.cloudcover}
+										showers={$todays_weather.noon.showers}
+										appendix="noon"
+									/>
+								</div>
+								<div
+									class="flex w-full flex-row items-center gap-2 align-middle text-[18px] font-extralight"
+								>
+									<Legend
+										rain={$todays_weather.afternoon.rain}
+										snow={$todays_weather.afternoon.snowfall}
+										cloud_cover={$todays_weather.afternoon.cloudcover}
+										showers={$todays_weather.afternoon.showers}
+										appendix="afternoon"
+									/>
+								</div>
+								<div
+									class="flex w-full flex-row items-center gap-2 align-middle text-[18px] font-extralight"
+								>
+									<Legend
+										rain={$todays_weather.night.rain}
+										snow={$todays_weather.night.snowfall}
+										cloud_cover={$todays_weather.night.cloudcover}
+										showers={$todays_weather.night.showers}
+										appendix="night"
+									/>
+								</div>
+							</div>
+						</div>
+					{/if}
+				</div>
 			</div>
-
-			
-		</div>
-        
-	{/if}
-</div>
-<div class="invisible max-w-0 md:max-w-full lg:max-w-full md:w-full lg:w-full md:visible lg:visible border-t border-solid border-black border-l">
-    <Locations
-        onback={() => {
-            show_locations_window = false;
-        }}
-        locations={$my_cities}
-        onCitySelect={setMainCity}
-    />
-</div>
+		{/if}
+	</div>
+	<div
+		class="invisible overflow-hidden max-h-[100vh] max-w-0 border-l border-t border-solid border-black md:visible md:w-full md:max-w-full lg:visible lg:w-full lg:max-w-full"
+	>
+		<Locations
+			onback={() => {
+				show_locations_window = false;
+			}}
+			locations={$my_cities}
+			onCitySelect={setMainCity}
+		/>
+	</div>
 </div>
 
 <!-- END OF WIDGETS -->
@@ -242,10 +243,6 @@
 
 <style>
 	.colored-bg {
-		background-image: radial-gradient(
-			circle at top right,
-			#e2ff1a 1%,
-			#ffff 99%
-		);
+		background-image: radial-gradient(circle at top right, #e2ff1a 1%, #ffff 99%);
 	}
 </style>
